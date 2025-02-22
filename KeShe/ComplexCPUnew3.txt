@@ -1,0 +1,112 @@
+; //*************************************** // 
+; //       开平方根程序                    // 
+; //*************************************** // 
+$P 00 20 ;IN R0 00H        ; 从IN单元读入数N到R0
+$P 01 00 
+$P 02 61 ;LDI R1 00H      ; 加载0到R1用于比较
+$P 03 00
+$P 04 84 ;SUB R0 R1       ; R0 = R0 - R1，判断是否为0
+$P 05 F0 ;BZC OUT        ; 如果为0则跳转到OUT
+$P 06 30
+$P 07 D0 ;STA 90H R0      ; 将N存入90H单元
+$P 08 90
+$P 09 63 ;LDI 00H R3      ; R3=0 (下界)
+$P 0A 00
+$P 0B D3 ;STA 91H R3      ; 存入91H (下界)
+$P 0C 91
+$P 0D D0 ;STA 92H R0      ; 将N存入92H (上界)
+$P 0E 92
+$P 0F C3 ;LAD R3 91H      ; 读取下界到R3
+$P 10 91
+$P 11 C1 ;LAD R1 92H      ; 读取上界到R1
+$P 12 92
+$P 13 73 ;INC R3          ; R3 = R3 + 1
+$P 14 8D ;SUB R1 R3       ; R1 = R1 - R3
+$P 15 F0 ;BZC Result      ; 如果R1=0或有借位则完成
+$P 16 30
+$P 17 0D ;ADD R1 R3       ; 恢复R1的值
+$P 18 B3 ;DEC R3          ; R3 = R3 - 1
+$P 19 0D ;ADD R1 R3       ; R1 = R1 + R3
+$P 1A A4 ;SHR R0 R1       ; R1逻辑右移一位到R0 (mid)
+$P 1B D0 ;STA 93H R0      ; 存储mid到93H
+$P 1C 93
+$P 1D 42 ;MOV R2 R0       ; R2 = R0 (用于计算平方)
+$P 1E 43 ;MOV R3 R0       ; R3 = R0
+$P 1F B3 ;LOOP: DEC R3    ; R3 = R3 - 1
+$P 20 F0 ;BZC Result      ; 如果R3=0则完成乘法
+$P 21 25
+$P 22 02 ;ADD R2 R0       ; R2 = R2 + R0
+$P 23 E0 ;JMP LOOP        ; 继续循环
+$P 24 1F
+$P 25 C1 ;LAD R1 90H      ; 读取原始数N到R1
+$P 26 90
+$P 27 86 ;SUB R2 R1       ; R2 = R2 - R1
+$P 28 F0 ;BZC Result      ; 如果R2=0或有借位则跳转
+$P 29 2E
+$P 2A D0 ;STA 92H R0      ; 更新上界为mid
+$P 2B 92
+$P 2C E0 ;JMP 0F          ; 继续二分查找
+$P 2D 0F
+$P 2E 06 ;ADD R2 R1       ; 恢复R2的值
+$P 2F 89 ;SUB R1 R2       ; R1 = R1 - R2
+$P 30 30 ;OUT R0 40H      ; 输出结果
+$P 31 40
+$P 32 50 ;END: HLT        ; 停机
+
+; //** Start Of MicroController Data **//
+$M 00 000001    ; NOP   
+$M 01 006D43    ; PC->AR, PC加1   
+$M 03 107070    ; MEM->IR, P<1>   
+$M 04 002405    ; RS->B   
+$M 05 04B201    ; A加B->RD   
+$M 06 002407    ; RS->B   
+$M 07 013201    ; A与B->RD   
+$M 08 106009    ; MEM->AR   
+$M 09 183001    ; IO->RD   
+$M 0A 106010    ; MEM->AR   
+$M 0B 000001    ; NOP   
+$M 0C 103001    ; MEM->RD   
+$M 0D 200601    ; RD->MEM   
+$M 0E 005341    ; A->PC   
+$M 0F 0000CB    ; NOP, P<3>   
+$M 10 280401    ; RS->IO   
+$M 11 103001    ; MEM->RD   
+$M 12 06B201    ; A加1->RD   
+$M 13 002414    ; RS->B   
+$M 14 05B201    ; A减B->RD   
+$M 15 002416    ; RS->B   
+$M 16 01B201    ; A或B->RD   
+$M 17 002418    ; RS->B   
+$M 18 033201    ; A右移->RD   
+$M 19 063201    ; A减1->RD
+$M 1B 005341    ; A->PC   
+$M 1C 10101D    ; MEM->A   
+$M 1D 10608C    ; MEM->AR, P<2> 
+$M 1E 10601F    ; MEM->AR   
+$M 1F 101020    ; MEM->A   
+$M 20 10608C    ; MEM->AR, P<2>   
+$M 28 101029    ; MEM->A   
+$M 29 00282A    ; RI->B   
+$M 2A 04E22B    ; A加B->AR   
+$M 2B 04928C    ; A加B->A, P<2>   
+$M 2C 10102D    ; MEM->A   
+$M 2D 002C2E    ; PC->B   
+$M 2E 04E22F    ; A加B->AR   
+$M 2F 04928C    ; A加B->A, P<2>   
+$M 30 001604    ; RD->A   
+$M 31 001606    ; RD->A   
+$M 32 006D48    ; PC->AR, PC加1   
+$M 33 006D4A    ; PC->AR, PC加1   
+$M 34 003401    ; RS->RD   
+$M 35 000035    ; NOP   
+$M 36 006D51    ; PC->AR, PC加1   
+$M 37 001612    ; RD->A   
+$M 38 001613    ; RD->A   
+$M 39 001615    ; RD->A   
+$M 3A 001618    ; RS->A 
+$M 3B 001619    ; RD->A
+$M 3C 006D5C    ; PC->AR, PC加1   
+$M 3D 006D5E    ; PC->AR, PC加1   
+$M 3E 006D68    ; PC->AR, PC加1   
+$M 3F 006D6C    ; PC->AR, PC加1 
+; //** End Of MicroController Data **//
